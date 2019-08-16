@@ -9,14 +9,22 @@ If you want to support pandas development, you can find information at the [Dona
 ## Maintainers
 
 <div class="maintainers">
-    {% for row in maintainers.people | batch(5) %}
+    {% for row in maintainers.people | batch(6) %}
         <div class="card-deck maintainers">
             {% for person in row %}
                 <div class="card">
                     <img class="card-img-top" alt="" src="{{ person.avatar_url }}"/>
                     <div class="card-body">
-                        <h5 class="card-title"><a href="{% if person.blog %}{{ person.blog }}{% else %}{{ person.html_url }}{% endif %}" target="_blank">{{ person.name }}</a></h5>
-                        <p class="card-text">{{ person.login }}</p>
+                        <h5 class="card-title">
+                            {% if person.blog %}
+                                <a href="{{ person.blog }}">
+                                    {{ person.name or person.login }}
+                                </a>
+                            {% else %}
+                                {{ person.name or person.login }}
+                            {% endif %}
+                        </h5>
+                        <p class="card-text"><a href="{{ person.html_url }}">{{ person.login }}</a></p>
                     </div>
                 </div>
             {% endfor %}
