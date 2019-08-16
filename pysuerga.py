@@ -57,6 +57,29 @@ class Preprocessors:
             context['maintainers']['people'].append(resp.json())
         return context
 
+    @staticmethod
+    def home_add_releases(context):
+        resp = requests.get(
+            'https://api.github.com/repos/pandas-dev/pandas/releases')
+        # FIXME GitHub quota limit reached, failing silently for now
+        if resp.status_code == 403:
+            return context
+        resp.raise_for_status()
+
+        context['releases'] = []
+        for release in resp.json():
+            if release['prerelease']:
+                continue
+            published = datetime.datetime.strptime(release['published_at'],
+                                                   '%Y-%m-%dT%H:%M:%SZ')
+            context['releases'].append({
+                'name': release['tag_name'].lstrip('v'),
+                'tag': release['tag_name'],
+                'published': published,
+                'url': (release['assets'][0]['browser_download_url']
+                        if release['assets'] else '')})
+        return context
+
 
 def get_context(config_fname: str, preprocessors=[], **kwargs):
     with open(config_fname) as f:
@@ -94,7 +117,8 @@ def main(config_fname: str,
     context = get_context(config_fname,
                           preprocessors=[Preprocessors.navbar_add_info,
                                          Preprocessors.blog_add_posts,
-                                         Preprocessors.maintainers_add_info],
+                                         Preprocessors.maintainers_add_info,
+                                         Preprocessors.home_add_releases],
                           base_url=base_url)
     sys.stderr.write('Context generated\n')
 
